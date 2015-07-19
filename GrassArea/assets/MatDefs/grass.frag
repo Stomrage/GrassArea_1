@@ -10,7 +10,6 @@ void main(){
     vec4 mask_pixel = texture2D(dissolveTexture,texCoord);
 
     vec3 finalDiffuse = diffuseLight;
-
     finalDiffuse += vec3(3,3,3);
     finalDiffuse = vec3(mix(minGrass, finalDiffuse.rgb, texCoord.y));
     finalDiffuse = vec3(mix(finalDiffuse.rgb, maxGrass, texCoord.y));

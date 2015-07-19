@@ -7,6 +7,8 @@ ShaderNodesDefinitions {
             It also can pass texture coordinates 1 & 2, and vertexColor to the frgment shader as varying (or inputs for glsl >=1.3)                   
             @input modelPosition the vertex position in model space (usually assigned with Attr.inPosition or Global.position)
             @input projectionMatrix the Projection matrix
+            @input modelNormal the model normal
+            @input cameraDirection the camera eye vector
             @input viewMatrix the model view  matrix
             @input cameraPosition the camera position
             @input texCoord1 The first texture coordinates of the vertex (usually assigned with Attr.inTexCoord)
@@ -24,6 +26,8 @@ ShaderNodesDefinitions {
         Input{
             vec3 modelPosition  
             mat4 projectionMatrix
+            vec3 modelNormal
+            vec3 cameraDirection
             mat4 viewMatrix
             vec3 cameraPosition
             vec2 texCoord1

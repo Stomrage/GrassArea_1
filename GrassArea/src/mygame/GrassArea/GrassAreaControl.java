@@ -8,6 +8,7 @@ import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
@@ -22,23 +23,38 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- *
+ * A control class to check for the Closest GrassBlade chunk everyframe
  * @author Stomrage
  */
 public class GrassAreaControl implements Control {
 
+    //A grass comparator to sort the Grass by distance to the camera
     private GrassComparator grassComp;
     private Camera cam;
     private GrassArea grassArea;
 
+    /**
+     * An empty construct @see Savable
+     */
     public GrassAreaControl() {
     }
 
+    /**
+     * The GrassAreaControl construct, only take the camera since the GrassArea will
+     * be linked with the setSpatial control method
+     * @param cam Your main scene camera
+     */
     public GrassAreaControl(Camera cam) {
         this.cam = cam;
         grassComp = new GrassComparator(cam);
     }
 
+    /**
+     * Compare the x,z distance of 2 3d vector
+     * @param camLocation The camera location (adjusted or not)
+     * @param location The location of the GrassObject to comapre
+     * @return 
+     */
     private float compareRealDistance(Vector3f camLocation, Vector3f location) {
         Vector2f cam2D = new Vector2f(camLocation.x, camLocation.z);
         Vector2f loc2D = new Vector2f(location.x, location.z);
@@ -66,10 +82,10 @@ public class GrassAreaControl implements Control {
         adjustedCam.addLocal(cam.getDirection().x * GrassFactory.getInstance().getGrassDist(), 0, cam.getDirection().z * GrassFactory.getInstance().getGrassDist());
         List<GrassBlade> grassBlades = new ArrayList<GrassBlade>();
         GrassObject[][] grassPatches = grassArea.getPatch();
-        int division = grassArea.getDivision() - 1;
+        int division = grassArea.getDivision()-1;
         for (int x = 0; x < 2; x++) {
             for (int z = 0; z < 2; z++) {
-                if (compareRealDistance(adjustedCam, grassPatches[x][z].getLocation()) < GrassFactory.getInstance().getGrassDist()*2+grassArea.getSize()/2) {
+                if (compareRealDistance(adjustedCam, grassPatches[x][z].getLocation()) < (grassArea.getSize()/2)*division+GrassFactory.getInstance().getGrassDist()) {
                     checkForHolder((GrassPatch) grassPatches[x][z], grassBlades, division - 1, adjustedCam);
                 }
             }
@@ -78,18 +94,27 @@ public class GrassAreaControl implements Control {
         grassArea.createMesh(grassBlades);
     }
 
+    /**
+     * This method is here to check the GrassArea tree system and compare them
+     * with the level of subdivision, until a GrassHolder is found and then
+     * fill the GrassBlades list in parameter
+     * @param g The current grass object
+     * @param grassBlades The list of GrassBlade to draw
+     * @param division The current subdivion level
+     * @param adjustedCam The position of the camera
+     */
     private void checkForHolder(GrassPatch g, List<GrassBlade> grassBlades, int division, Vector3f adjustedCam) {
         GrassObject[][] grassPatches = g.getPatch();
         for (int x = 0; x < 2; x++) {
             for (int z = 0; z < 2; z++) {
                 if (grassPatches[x][z] instanceof GrassPatch) {
                     GrassPatch patch = (GrassPatch) grassPatches[x][z];
-                    //if (compareRealDistance(adjustedCam, grassPatches[x][z].getLocation()) < GrassFactory.getInstance().getGrassDist()*2 + patch.getSize()) {
+                    if (compareRealDistance(adjustedCam, grassPatches[x][z].getLocation()) < (patch.getSize()/2)*division+GrassFactory.getInstance().getGrassDist()) {
                         checkForHolder(patch, grassBlades, division - 1, adjustedCam);
-                    //}
+                    }
                 } else {
                     GrassHolder holder = (GrassHolder) grassPatches[x][z];
-                    if (compareRealDistance(adjustedCam, holder.getLocation()) < GrassFactory.getInstance().getGrassDist()) {
+                    if (compareRealDistance(adjustedCam, holder.getLocation()) < (holder.getSize()/2)*division+GrassFactory.getInstance().getGrassDist()) {
                         grassBlades.addAll(holder.getGrass());
                     }
                 }

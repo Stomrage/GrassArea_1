@@ -5,11 +5,13 @@ MaterialDef Simple {
         Texture2D Dissolve
     }
     Technique {
+        LightMode MultiPass
         WorldParameters {
             ProjectionMatrix
             ViewMatrix
             CameraPosition
             WorldMatrix
+            CameraDirection
         }
         VertexShaderNodes {
             ShaderNode grassv {
@@ -23,6 +25,8 @@ MaterialDef Simple {
                     texCoord1 = Attr.inTexCoord
                     worldMatrix = WorldParam.WorldMatrix
                     texCoord3 = Attr.inTexCoord3
+                    modelNormal = Attr.inNormal
+                    cameraDirection = WorldParam.CameraDirection
                 }
                 OutputMappings {
                     Global.position = projPosition

@@ -3,11 +3,18 @@ package mygame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.collision.CollisionResults;
 import com.jme3.export.binary.BinaryExporter;
-import com.jme3.export.binary.BinaryImporter;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
@@ -19,7 +26,6 @@ import com.jme3.texture.Texture;
 import com.jme3.util.SkyFactory;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mygame.GrassArea.GrassArea;
@@ -32,7 +38,7 @@ import mygame.GrassArea.GrassAreaControl;
  *
  * @author normenhansen
  */
-public class Main extends SimpleApplication {
+public class Main extends SimpleApplication implements ActionListener {
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -42,15 +48,30 @@ public class Main extends SimpleApplication {
     private Material matTerrain;
     private DirectionalLight sun;
     private GrassArea grassArea;
+    private boolean doIt;
+    private float[][] height;
 
     @Override
     public void simpleInitApp() {
         //DebugSingleton.getInstance().initDebug(assetManager, rootNode);
         flyCam.setMoveSpeed(100f);
+        registerInputs();
         createTerrain();
         addLight();
         createGrassArea();
+        height = new float[64][64];
+        for (int i = 0; i < 64; i++) {
+            for (int j = 0; j < 64; j++) {
+                height[i][j] = 0.1f;
+            }
+        }
         //loadGrassArea();
+    }
+
+    public void registerInputs() {
+        inputManager.addMapping("click", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener(this, "click");
+
     }
 
     public void loadGrassArea() {
@@ -67,13 +88,14 @@ public class Main extends SimpleApplication {
             grassArea.addDensityMap(assetManager.loadTexture("Textures/noise.png"));
             grassArea.addDensityMap(assetManager.loadTexture("Textures/noise_2.png"));
             grassArea.addLayer(0f, 0.5f, 2f, ColorChannel.RED_CHANNEL, DensityMap.DENSITY_MAP_1, 2f, 3f);
-            grassArea.addLayer(0.5f, 0.5f, 0.5f, ColorChannel.BLUE_CHANNEL, DensityMap.DENSITY_MAP_2, 2f, 3f);
+            grassArea.addLayer(0.5f, 0.5f, 2f, ColorChannel.BLUE_CHANNEL, DensityMap.DENSITY_MAP_2, 2f, 3f);
             grassArea.generate();
         } catch (Exception ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
         GrassAreaControl grassAreaControl = new GrassAreaControl(cam);
         grassArea.addControl(grassAreaControl);
+        grassArea.setAutoUpdate(true);
         rootNode.attachChild(grassArea);
     }
 
@@ -156,11 +178,33 @@ public class Main extends SimpleApplication {
 
     @Override
     public void simpleUpdate(float tpf) {
-        //TODO: add update code
+        if (doIt) {
+            CollisionResults results = new CollisionResults();
+            Ray r = new Ray(cam.getLocation(), cam.getDirection());
+            terrain.collideWith(r, results);
+            if (results.size() > 0) {
+                Vector3f contact = results.getClosestCollision().getContactPoint();
+                //grassArea.setDensity(DensityMap.DENSITY_MAP_1, ColorChannel.RED_CHANNEL, height, 64, new Vector2f(contact.x-32, contact.z-32));
+                //grassArea.generateAt(new Vector2f(contact.x-10, contact.z-10), new Vector2f(contact.x+10, contact.z+10));
+            }
+        }
+        if(doIt){
+            //grassArea.setLayerDensity(DensityMap.DENSITY_MAP_1, ColorChannel.RED_CHANNEL, FastMath.nextRandomFloat()*4);
+            //grassArea.setLayerTexture(DensityMap.DENSITY_MAP_1, ColorChannel.RED_CHANNEL, 0.5f, 0.5f);
+            //grassArea.setLayerSize(DensityMap.DENSITY_MAP_1, ColorChannel.RED_CHANNEL, 3, 5);
+        }
     }
 
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
+    }
+
+    public void onAction(String name, boolean isPressed, float tpf) {
+        if (name.equals("click") && isPressed) {
+            doIt = true;
+        } else if (name.equals("click") && !isPressed) {
+            doIt = false;
+        }
     }
 }

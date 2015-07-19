@@ -5,6 +5,7 @@
 package mygame.GrassArea;
 
 import com.jme3.export.Savable;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 
 /**
@@ -29,5 +30,36 @@ public interface GrassObject extends Savable{
      * @return The size of the GrassObject
      */
     public int getSize();
+    
+    /**
+     * This method update the GrassBlade y position of the grass holder at the given location
+     * @param x The x position
+     * @param z The z position
+     */
+    public void updateAt(Vector2f pointA);
+    
+    /**
+     * This method update all the GrassBlade y position in a rectangle starting from pointA to pointB
+     * @param pointA Starting position of the square
+     * @param pointB End position of the square
+     */
+    public void updateAt(Vector2f pointA, Vector2f pointB);
+    
+    /**
+     * Same as updateAt but this time the GrassBlades are generated
+     * @param x The x position
+     * @param z The z position
+     */
+    public void generateAt(Vector2f pointA);
+    
+    /**
+     * Same as updateAt but this time the GrassBlades are generated
+     * @param pointA Starting position of the square
+     * @param pointB End position of the square
+     */    
+    public void generateAt(Vector2f pointA, Vector2f pointB);
+    
+    public int getLocX();
+    public int getLocZ();
     
 }
