@@ -72,7 +72,7 @@ void main(){
         toAdd.x += -abs(texCoord2.y);
         modelSpacePos.xyz += toAdd/2;
     }*/
-    if(cameraPosition.z - modelPosition.z > 0){
+    if(cameraPosition.z - modelPosition.z > 0.0){
         if((cameraPosition.x - modelPosition.x < texCoord2.y && cameraPosition.x - modelPosition.x > -texCoord2.y)){
             toDo = false;        
         }
@@ -89,10 +89,10 @@ void main(){
         toAdd.z += -cos(angle) * abs(texCoord2.y);
         toAdd.x += sin(angle) * abs(texCoord2.y);
         toAdd.x += sign(cameraOffset.x)*abs(texCoord2.y);
-        modelSpacePos.xyz += sign(cameraOffset.x)*sign(texCoord2.y)*toAdd/2;
+        modelSpacePos.xyz += sign(cameraOffset.x)*sign(texCoord2.y)*toAdd/2.0;
     }
     projPosition = projectionMatrix * viewMatrix * modelSpacePos;
-    if(g_LightPosition.w == -1){
+    if(g_LightPosition.w == -1.0){
         diffuseLight += g_LightColor.rgb * CalcDirLight(g_LightPosition.xyz, modelNormal, cameraDirection);
     }
     
